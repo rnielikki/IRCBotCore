@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29020.237
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IRCBot", "IRCBot\IRCBot.csproj", "{1C69452D-38C7-4D6F-BFB5-5954D28AA2F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model", "Model\Model.csproj", "{EB72CEB0-FF86-41B8-8D87-D0855DC2EA3D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1C69452D-38C7-4D6F-BFB5-5954D28AA2F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C69452D-38C7-4D6F-BFB5-5954D28AA2F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C69452D-38C7-4D6F-BFB5-5954D28AA2F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C69452D-38C7-4D6F-BFB5-5954D28AA2F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB72CEB0-FF86-41B8-8D87-D0855DC2EA3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB72CEB0-FF86-41B8-8D87-D0855DC2EA3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB72CEB0-FF86-41B8-8D87-D0855DC2EA3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB72CEB0-FF86-41B8-8D87-D0855DC2EA3D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {01C99C96-6365-4311-97CA-D44455CFB141}
+	EndGlobalSection
+EndGlobal

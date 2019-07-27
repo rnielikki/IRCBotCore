@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Model">
+      <HintPath>..\IRCBot\bin\Release\netcoreapp2.1\Model.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
