@@ -23,7 +23,7 @@ namespace IRCBot
             }
             catch (ArgumentException)
             {
-                Console.WriteLine($"Encoding {encodingName} is not available. Usage: IRCBot [encoding]");
+                Console.WriteLine($"Encoding {encodingName} is not available.");
                 Console.WriteLine("Default encoding is UTF-8.");
                 Console.WriteLine("Available encodings on your computer:");
                 EncodingInfo[] test = Encoding.GetEncodings();

@@ -196,12 +196,6 @@ namespace IRCBot
                 Start();
 
             }
-            /*catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-                Console.WriteLine("Retrying...");
-                Task.Delay(5000).Wait();
-            }*/
             finally
             {
                 Connection?.Close();

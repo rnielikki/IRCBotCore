@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace IRCBot
 {
@@ -10,11 +11,13 @@ namespace IRCBot
         static void Main(string[] args)
         {
             bool directStart = false;
-            string encodingName = "utf-8";
+            string encodingName = null;
             string ThisName = Environment.GetCommandLineArgs()[0];
             IEnumerator<string> Args = args.Cast<string>().GetEnumerator();
-            while (Args.MoveNext()) {
-                switch (Args.Current.ToLower()) {
+            while (Args.MoveNext())
+            {
+                switch (Args.Current.ToLower())
+                {
                     case "-encoding":
                         if (!Args.MoveNext())
                         {
@@ -22,8 +25,9 @@ namespace IRCBot
                             Console.WriteLine($"use {ThisName} -help to see help.");
                             return;
                         }
-                        else {
-                            if (!MainController.SetEncoding(Args.Current)) return;
+                        else
+                        {
+                            encodingName = Args.Current;
                         }
                         break;
                     case "-start":
@@ -35,25 +39,27 @@ namespace IRCBot
                         Console.WriteLine("-encoding : Set encoding for the IRCBot (default is UTF-8)");
                         return;
                 }
-                if (!directStart)
+            }
+            if (encodingName == null) encodingName = "utf-8";
+            if (!MainController.SetEncoding(encodingName)) return;
+            if (!directStart)
+            {
+                ScreenController.Get();
+            }
+            else
+            {
+                Task<Setting> task = MainController.Start();
+                if (task?.Result == null)
                 {
-                    ScreenController.Get();
+                    Console.WriteLine("An error occured while reading or parsing the file. The IRCBot cannot be started.");
                 }
-                else {
-                    MainController.Start().ContinueWith(task=> {
-                        if (task?.Result == null)
-                        {
-                            Console.WriteLine("An error occured while reading or parsing the file. The IRCBot cannot be started.");
-                        }
-                        else if (task.IsCanceled || task.IsFaulted)
-                        {
-                            Console.WriteLine("Reading task is failed or canceled. The IRCBot cannot be started.");
-                        }
-                        else
-                        {
-                            MainController.Load(task.Result, false);
-                        }
-                    });
+                else if (task.IsCanceled || task.IsFaulted)
+                {
+                    Console.WriteLine("Reading task is failed or canceled. The IRCBot cannot be started.");
+                }
+                else
+                {
+                    MainController.Load(task.Result, false);
                 }
             }
         }

@@ -82,18 +82,23 @@ namespace IRCBot.Settings
         public int X { get; set; }
         public int Y { get; set; }
         public int Length { get; private set; }
+        public string Label { get; protected set; }
+        protected ConsoleColor Color { get; set; }
         public Input(int x, int y, int length, ConsoleColor color)
         {
             X = x;
             Y = y;
+            Color = color;
             Length = length;
-            Draw(x, y, length, color);
             Screen.Inputs.Add(this);
         }
-        protected void Draw(int x, int y, int length, ConsoleColor color)
+        protected void Draw(int x, int y, int length, ConsoleColor color, string label = "")
         {
             Console.SetCursorPosition(x, y);
-            WriteColor(new string(' ', length), color);
+            WriteColor(label+new string(' ', length-label.Length), color);
+        }
+        internal void Redraw() {
+            Draw(X, Y, Length, Color, Label);
         }
         public virtual void SetPosition() => Console.SetCursorPosition(X, Y);
         public virtual void OnKeyGet(ConsoleKeyInfo info)
@@ -108,22 +113,24 @@ namespace IRCBot.Settings
     }
     internal class InputButton : Input
     {
-        public string Label { get; private set; }
+        private string ButtonText { get; set; }
         private Action ButtonAction { get; set; }
         public InputButton(string label, int x, int y, int length, Action action) : base(x, y, length, Screen.ButtonColor)
         {
-            Label = label;
+            ButtonText = label;
+            ButtonAction = action;
+
             int half = ((length - label.Length) / 2) - 1;
-            string result;
-            if (half < 0) result = $"[{label}]";
+            if (half < 0) ButtonText = $"[{label}]";
             else
             {
                 string whitespace = new string('_', half);
-                result = '[' + whitespace + label + whitespace + ']';
+                Label = '[' + whitespace + label + whitespace + ']';
             }
             Console.SetCursorPosition(x, y);
-            WriteColor(result, Screen.ButtonColor);
-            ButtonAction = action;
+            Console.Write(Label);
+
+            Draw(x, y, length, Screen.ButtonColor, Label);
         }
         public override void OnKeyGet(ConsoleKeyInfo keyInfo)
         {
@@ -138,7 +145,6 @@ namespace IRCBot.Settings
     }
     internal class InputText : Input
     {
-        public string Label { get; private set; }
         private int LabelX { get; set; }
         public readonly StringBuilder Value = new StringBuilder();
         public InputText(string label, int labelx, int x, int y, int length) : base(x, y, length, Console.BackgroundColor)
@@ -146,6 +152,7 @@ namespace IRCBot.Settings
             Label = label;
             LabelX = labelx;
             WriteLabel();
+            Draw(x, y, length, Color);
         }
         internal void WriteLabel()
         {
@@ -170,9 +177,16 @@ namespace IRCBot.Settings
                         int leftBuffer = Console.CursorLeft;
                         int stringPos = leftBuffer - X;
                         Console.CursorLeft--;
-                        Console.Write(" ");
-                        Console.MoveBufferArea(leftBuffer, Y, Value.Length - stringPos, 1, leftBuffer - 1, Y);
+
+                        //MoveBufferArea is Window-specific
+                        //Console.Write(" ");
+                        //Console.MoveBufferArea(leftBuffer, Y, Value.Length - stringPos, 1, leftBuffer - 1, Y);
+
                         Value.Remove(stringPos - 1, 1);
+                        Console.Write(Value.ToString().Substring(stringPos-1)+" ");
+
+                        //
+
                         Console.CursorLeft = leftBuffer - 1;
                     }
                     break;
@@ -181,10 +195,15 @@ namespace IRCBot.Settings
                     {
                         int leftBuffer = Console.CursorLeft;
                         int stringPos = leftBuffer - X;
-                        Console.Write(" ");
-                        Console.MoveBufferArea(leftBuffer + 1, Y, Value.Length - stringPos - 1, 1, leftBuffer, Y);
-                        Console.CursorLeft = leftBuffer;
+
+                        //same problem as backspace...
+                        //Console.Write(" ");
+                        //Console.MoveBufferArea(leftBuffer + 1, Y, Value.Length - stringPos - 1, 1, leftBuffer, Y);
+
                         Value.Remove(stringPos, 1);
+                        Console.Write(Value.ToString().Substring(stringPos)+" ");
+
+                        Console.CursorLeft = leftBuffer;
                     }
                     break;
                 default:
@@ -193,9 +212,13 @@ namespace IRCBot.Settings
                     {
                         int leftBuffer = Console.CursorLeft;
                         int stringPos = leftBuffer - X;
-                        Console.MoveBufferArea(leftBuffer, Y, Value.Length - stringPos, 1, leftBuffer + 1, Y);
-                        Console.Write(data);
+
+                        //Console.MoveBufferArea(leftBuffer, Y, Value.Length - stringPos, 1, leftBuffer + 1, Y);
+
                         Value.Insert(stringPos, data);
+                        Console.Write(Value.ToString().Substring(stringPos));
+
+                        Console.CursorLeft = leftBuffer+1;
                     }
                     break;
             }
@@ -311,6 +334,7 @@ namespace IRCBot.Settings
             if (lineChange != 0)
             {
                 listSet.OnLineChange(lineChange);
+                Console.SetCursorPosition(TextField.X, TextField.Y);
             }
         }
         public IEnumerable<string> Result() => listSet.Values.Select(lvalue => lvalue.Value);
@@ -326,14 +350,17 @@ namespace IRCBot.Settings
                 Value = value;
                 X = x;
                 Y = y;
-                Console.SetCursorPosition(x, y);
+                Render();
+                parent.TextField.Clear();
+                Screen.SelectBefore();
+            }
+            internal void Render() {
+                Console.SetCursorPosition(X, Y);
                 Console.BackgroundColor = ConsoleColor.DarkRed;
                 Console.Write("[X]");
                 Console.BackgroundColor = ConsoleColor.Blue;
-                Console.Write(value);
+                Console.Write(Value);
                 Console.BackgroundColor = Screen.BgDefault;
-                parent.TextField.Clear();
-                Screen.SelectBefore();
             }
             public void Select()
             {
@@ -394,7 +421,11 @@ namespace IRCBot.Settings
 
                 int line = itemPosition / screenWidth;
 
+                Console.SetCursorPosition(Current.X, Current.Y);
+                Console.WriteLine(new String(' ', itemPosition - Current.X + (Current.Y / Console.WindowWidth)));
+
                 itemPosition -= cutLength;
+                /*
                 if (leftOffset + cutLength < screenWidth)
                 {
                     Console.MoveBufferArea(leftOffset + cutLength, topOffset, screenWidth - cutLength - leftOffset, 1, leftOffset, topOffset);
@@ -413,6 +444,7 @@ namespace IRCBot.Settings
                     Console.MoveBufferArea(0, topOffset + i, cutLength, 1, screenWidth - cutLength, topOffset + i - 1);
                     Console.MoveBufferArea(cutLength, topOffset + i, screenWidth - cutLength, 1, 0, topOffset + i);
                 }
+                */
                 Values.Remove(Current);
                 IEnumerable<ListValue> afters = Values.TakeLast(Values.Count - listIndex);
                 foreach (ListValue after in afters)
@@ -423,6 +455,7 @@ namespace IRCBot.Settings
                         after.X += screenWidth;
                         after.Y--;
                     }
+                    after.Render();
                 }
                 sbyte change = (sbyte)(itemPosition / screenWidth - line);
                 if (change != 0 && line >= 2)
@@ -439,7 +472,6 @@ namespace IRCBot.Settings
                 }
                 Console.BackgroundColor = Screen.BgDefault;
             }
-            protected new void Draw(int x, int y, int length, ConsoleColor color) { }
             //if too long, moves the next line
             //one of the feature that not makes suitable for real library.
             public void OnLineChange(sbyte lineChange)
@@ -450,12 +482,19 @@ namespace IRCBot.Settings
                 {
                     Console.WindowHeight += 2;
                 }
-                Console.MoveBufferArea(0, moveTarget, Console.WindowWidth, Console.WindowHeight - moveTarget, 0, moveTarget + lineChange, ' ', Console.ForegroundColor, Screen.BgColor);
+                //Every MoveBufferArea never work for cross-platform!
+                //Console.MoveBufferArea(0, moveTarget, Console.WindowWidth, Console.WindowHeight - moveTarget, 0, moveTarget + lineChange, ' ', Console.ForegroundColor, Screen.BgColor);
+                for (int i = moveTarget; i < Console.WindowHeight; i++) {
+                    Console.SetCursorPosition(0, i);
+                    WriteColor(new String(' ',Console.WindowWidth), Screen.BgColor);
+                }
+
                 List<Input> inputs = Screen.Inputs;
                 IEnumerable<Input> afters = inputs.TakeLast(inputs.Count() - inputs.IndexOf(this) - 1);
                 foreach (Input input in afters)
                 {
                     input.Y += lineChange;
+                    input.Redraw();
                 }
             }
         }

@@ -30,6 +30,21 @@ namespace IRCBot
         internal void LoadAll()
         {
             Console.WriteLine("----------------Loading modules...-----------");
+            if (!Directory.Exists(path))
+            {
+                Console.WriteLine($"Path {path} doesn't exist.");
+                try
+                {
+                    Directory.CreateDirectory(path);
+                     Console.WriteLine($"Created new folder in {path}.");
+                }
+                catch(UnauthorizedAccessException){
+                    Console.WriteLine($"Failed to create the folder in {path}. Access denied.");
+                }
+                catch(IOException){
+                    Console.WriteLine($"Failed to crate folder in {path}.");
+                }
+            }
             foreach (string module in Directory.GetFiles(path, "*.dll"))
             {
                 Assembly M = null;
